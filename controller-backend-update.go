@@ -17,6 +17,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 
 	"github.com/haproxytech/models"
@@ -53,13 +54,17 @@ func (b *backend) updateForwardfor(data *StringW) error {
 		b.Forwardfor = nil
 		return nil
 	}
-	val := &models.Forwardfor{
-		Enabled: &data.Value,
+	enabled, err := strconv.ParseBool(data.Value)
+	if err != nil {
+		return err
 	}
-	if err := val.Validate(nil); err != nil {
-		return fmt.Errorf("forwarded-for option: %s", err)
+	if enabled {
+		b.Forwardfor = &models.Forwardfor{
+			Enabled: ptrString("enabled"),
+		}
+	} else {
+		b.Forwardfor = nil
 	}
-	b.Forwardfor = val
 	return nil
 }
 

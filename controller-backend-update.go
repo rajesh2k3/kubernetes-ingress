@@ -38,11 +38,11 @@ func (b *backend) updateBalance(data *StringW) error {
 }
 
 func (b *backend) updateCheckTimeout(data *StringW) error {
-	val, err := annotationConvertTimeToMS(*data)
+	val, err := ParseTime(data.Value)
 	if err != nil {
 		return fmt.Errorf("timeout check: %s", err)
 	}
-	b.CheckTimeout = &val
+	b.CheckTimeout = val
 	return nil
 }
 

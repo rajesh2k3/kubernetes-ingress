@@ -15,7 +15,6 @@
 package main
 
 import (
-	"github.com/haproxytech/client-native/misc"
 	"github.com/haproxytech/models"
 	"strconv"
 )
@@ -36,7 +35,10 @@ func (s *server) updateCheck(data *StringW) error {
 }
 
 func (s *server) updateInter(data *StringW) error {
-	time := misc.ParseTimeout(data.Value)
+	time, err := ParseTime(data.Value)
+	if err != nil {
+		return err
+	}
 	s.Inter = time
 	return nil
 }

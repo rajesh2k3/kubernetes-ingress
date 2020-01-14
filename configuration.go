@@ -34,20 +34,20 @@ type NamespacesWatch struct {
 }
 
 type Configuration struct {
-	Namespace            map[string]*Namespace
-	NamespacesAccess     NamespacesWatch
-	ConfigMap            *ConfigMap
-	ConfigMapTCPServices *ConfigMap
-	SSLRedirect          bool
-	RateLimitingEnabled  bool
-	HTTPRequests         map[string][]models.HTTPRequestRule
-	HTTPRequestsStatus   Status
-	TCPRequests          map[string][]models.TCPRequestRule
-	TCPRequestsStatus    Status
-	UseBackendRules      map[Mode]*BackendSwitching
-	TCPBackends          map[string]int64
-	HTTPS                bool
-	SSLPassthrough       bool
+	Namespace              map[string]*Namespace
+	NamespacesAccess       NamespacesWatch
+	ConfigMap              *ConfigMap
+	ConfigMapTCPServices   *ConfigMap
+	HTTPRequests           map[string][]models.HTTPRequestRule
+	HTTPRequestsStatus     Status
+	TCPRequests            map[string][]models.TCPRequestRule
+	TCPRequestsStatus      Status
+	BackendSwitchingRules  map[string]UseBackendRules
+	BackendSwitchingStatus map[string]struct{}
+	RateLimitingEnabled    bool
+	HTTPS                  bool
+	SSLRedirect            bool
+	SSLPassthrough         bool
 }
 
 func (c *Configuration) IsRelevantNamespace(namespace string) bool {
@@ -90,14 +90,8 @@ func (c *Configuration) Init(osArgs OSArgs, api *clientnative.HAProxyClient) {
 
 	c.HTTPRequests[HTTP_REDIRECT] = []models.HTTPRequestRule{}
 
-	c.UseBackendRules = make(map[Mode]*BackendSwitching)
-	for _, mode := range []Mode{ModeHTTP, ModeTCP} {
-		c.UseBackendRules[mode] = &BackendSwitching{}
-		c.UseBackendRules[mode].Modified = false
-		c.UseBackendRules[mode].Rules = map[string]BackendSwitchingRule{}
-	}
+	c.BackendSwitchingRules = make(map[string]UseBackendRules)
 
-	c.TCPBackends = map[string]int64{}
 }
 
 //GetNamespace returns Namespace. Creates one if not existing
@@ -222,7 +216,5 @@ func (c *Configuration) Clean() {
 	}
 	c.HTTPRequestsStatus = EMPTY
 	c.TCPRequestsStatus = EMPTY
-	c.UseBackendRules[ModeTCP].Modified = false
-	c.UseBackendRules[ModeHTTP].Modified = false
 	defaultAnnotationValues.Clean()
 }
